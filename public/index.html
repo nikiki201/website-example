@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bistro du Quai - Restaurant</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="logo">Bistro du Quai</span>
+        <p>Saveurs de la mer et ambiance chaleureuse</p>
+      </div>
+      <nav class="site-nav">
+        <a href="#about">À propos</a>
+        <a href="#menu">Menu</a>
+        <a href="#reservation">Réservation</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+        <a href="/reservations">Voir les réservations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-content">
+        <div>
+          <span class="eyebrow">Restaurant imaginaire</span>
+          <h1>Bienvenue au <span>Bistro du Quai</span></h1>
+          <p>Une expérience culinaire raffinée entre terre et mer, dans un cadre cosy et accueillant.</p>
+          <a class="button" href="#reservation">Réservez votre table</a>
+        </div>
+        <div class="hero-card">
+          <h2>Notre espace</h2>
+          <p>Terrasse ensoleillée, salle chaleureuse et cuisine ouverte pour une ambiance conviviale.</p>
+          <ul>
+            <li>Produits frais du marché</li>
+            <li>Menu du jour élaboré chaque matin</li>
+            <li>Accords mets et vins recommandés</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section container">
+      <div class="section-header">
+        <h2>À propos de nous</h2>
+        <p>Le Bistro du Quai propose une cuisine inventive inspirée de la mer et des produits locaux. Notre équipe vous accueille du mardi au dimanche pour un moment convivial et gourmand.</p>
+      </div>
+      <div class="grid-3">
+        <article class="feature-card">
+          <h3>Qualité</h3>
+          <p>Ingrédients sélectionnés avec soin, pêche locale et légumes de saison.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Ambiance</h3>
+          <p>Décor raffiné, lumière tamisée et service attentionné pour vos soirées.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Savoir-faire</h3>
+          <p>Une équipe passionnée et créative, prête à vous faire découvrir nos spécialités.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="menu" class="section container menu-section">
+      <div class="section-header">
+        <h2>Menu du Bistro</h2>
+        <p>Des plats savoureux pensés pour éveiller vos papilles du début à la fin.</p>
+      </div>
+      <div class="grid-3">
+        <article class="menu-card">
+          <h3>Entrées</h3>
+          <p>Velouté de courge au gingembre</p>
+          <p>Tartare de saumon aux herbes</p>
+          <p>Salade quinoa, avocat et crevettes</p>
+        </article>
+        <article class="menu-card">
+          <h3>Plats</h3>
+          <p>Filet de bar rôti au beurre citronné</p>
+          <p>Risotto crémeux aux coquillages</p>
+          <p>Suprême de volaille, légumes de saison</p>
+        </article>
+        <article class="menu-card">
+          <h3>Desserts</h3>
+          <p>Tartelette citron meringuée</p>
+          <p>Mousse au chocolat intense</p>
+          <p>Panna cotta aux fruits rouges</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="reservation" class="section container reservation-section">
+      <div class="section-header">
+        <h2>Réservez une table</h2>
+        <p>Choisissez la date et l'heure, nous prendrons soin de votre arrivée.</p>
+      </div>
+      <form id="reservation-form" class="reservation-form">
+        <div class="form-grid">
+          <label>
+            Nom complet
+            <input type="text" name="name" required placeholder="Jean Dupont" />
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" required placeholder="jean@example.com" />
+          </label>
+          <label>
+            Téléphone
+            <input type="tel" name="phone" placeholder="0612345678" />
+          </label>
+          <label>
+            Date
+            <input type="date" name="date" required />
+          </label>
+          <label>
+            Heure
+            <input type="time" name="time" required />
+          </label>
+          <label>
+            Nombre de personnes
+            <input type="number" name="guests" min="1" max="20" required value="2" />
+          </label>
+          <label class="full-width">
+            Message
+            <textarea name="message" placeholder="Allergies, occasion spéciale..." rows="4"></textarea>
+          </label>
+        </div>
+        <button class="button" type="submit">Envoyer la réservation</button>
+        <p class="form-status" id="form-status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="faq" class="section container faq-section">
+      <div class="section-header">
+        <h2>FAQ</h2>
+        <p>Réponses aux questions les plus fréquentes pour faciliter votre visite.</p>
+      </div>
+      <div class="faq-grid">
+        <div class="faq-card">
+          <h3>Puis-je réserver pour un groupe ?</h3>
+          <p>Oui, vous pouvez réserver jusqu'à 20 personnes directement depuis le formulaire.</p>
+        </div>
+        <div class="faq-card">
+          <h3>Proposez-vous des options végétariennes ?</h3>
+          <p>Nous proposons plusieurs plats végétariens et alternatives sur demande.</p>
+        </div>
+        <div class="faq-card">
+          <h3>Y a-t-il un parking à proximité ?</h3>
+          <p>Oui, un parking public se trouve à seulement 3 minutes à pied du restaurant.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section container contact-section">
+      <div class="section-header">
+        <h2>Contactez-nous</h2>
+        <p>Nous sommes ouverts du mardi au dimanche de 12h à 22h.</p>
+      </div>
+      <div class="contact-grid">
+        <div>
+          <h3>Adresse</h3>
+          <p>12 Quai des Saveurs, 75000 Paris</p>
+          <h3>Téléphone</h3>
+          <p>+33 1 23 45 67 89</p>
+          <h3>Email</h3>
+          <p>contact@bistroduquai.fr</p>
+        </div>
+        <div>
+          <iframe title="Plan du restaurant" src="https://maps.google.com/maps?q=Paris&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; 2026 Bistro du Quai. Tous droits réservés.</p>
+      <p>Réservez en ligne et profitez d'un moment unique.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

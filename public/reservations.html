@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Réservations - Bistro du Quai</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="logo">Bistro du Quai</span>
+        <p>Liste des réservations</p>
+      </div>
+      <nav class="site-nav">
+        <a href="/">Accueil</a>
+        <a href="/reservations">Réservations</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section container reservations-section">
+      <div class="section-header">
+        <h2>Réservations enregistrées</h2>
+        <p>Visualisez toutes les réservations avec un aperçu clair et un accès rapide aux informations clés.</p>
+      </div>
+
+      <div class="reservations-topbar">
+        <input id="reservation-search" type="search" placeholder="Rechercher par nom, email, date ou heure" aria-label="Recherche de réservation" />
+        <p id="reservation-count" class="reservation-count">Chargement...</p>
+      </div>
+
+      <div id="reservation-empty" class="info-card" hidden>
+        Aucune réservation trouvée pour le moment.
+      </div>
+
+      <div class="reservations-grid" id="reservation-list"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; 2026 Bistro du Quai. Tous droits réservés.</p>
+      <p>Retrouvez ici les dernières réservations statutaires.</p>
+    </div>
+  </footer>
+
+  <script src="reservations.js"></script>
+</body>
+</html>
