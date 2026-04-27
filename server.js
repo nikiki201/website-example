@@ -269,13 +269,43 @@ app.delete('/api/user-reservations/:id', (req, res) => {
   });
 });
 
-app.get('/api/reservations', (req, res) => {
-  db.all('SELECT * FROM reservations ORDER BY created_at DESC', (err, rows) => {
+app.put('/api/reservations/:id', (req, res) => {
+  const reservationId = Number.parseInt(req.params.id, 10);
+  const { name, email, phone, date, time, guests, message } = req.body;
+
+  if (!Number.isInteger(reservationId) || reservationId <= 0) {
+    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+  }
+
+  if (!name || !email || !date || !time || !guests) {
+    return res.status(400).json({ error: 'Veuillez renseigner tous les champs requis.' });
+  }
+
+  const newDateTime = parseReservationDateTime(date, time);
+  if (!newDateTime) {
+    return res.status(400).json({ error: 'Date et heure de reservation invalides.' });
+  }
+
+  db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
     if (err) {
-      return res.status(500).json({ error: 'Impossible de recuperer les reservations.' });
+      return res.status(500).json({ error: 'Impossible de recuperer la reservation.' });
     }
 
-    return res.json(rows);
+    if (!row) {
+      return res.status(404).json({ error: 'Reservation introuvable.' });
+    }
+
+    db.run(
+      'UPDATE reservations SET name = ?, email = ?, phone = ?, date = ?, time = ?, guests = ?, message = ? WHERE id = ?',
+      [name, email, phone || '', date, time, guests, message || '', reservationId],
+      function onUpdate(updateErr) {
+        if (updateErr) {
+          return res.status(500).json({ error: 'Impossible de mettre a jour la reservation.' });
+        }
+
+        return res.json({ message: 'Reservation modifiee avec succes.' });
+      }
+    );
   });
 });
 

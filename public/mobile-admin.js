@@ -53,10 +53,10 @@ class MobileAdmin {
       });
     }
 
-    // Delete reservation
-    const deleteBtn = document.getElementById('delete-reservation-btn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => this.deleteCurrentReservation());
+    // Edit reservation
+    const editBtn = document.getElementById('edit-reservation-btn');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => this.toggleEditMode());
     }
   }
 
@@ -310,6 +310,7 @@ class MobileAdmin {
     `;
 
     document.getElementById('delete-reservation-btn').dataset.id = id;
+    document.getElementById('edit-reservation-btn').dataset.id = id;
     document.getElementById('reservation-modal').style.display = 'flex';
   }
 
@@ -345,6 +346,108 @@ class MobileAdmin {
     } catch (error) {
       console.error('Erreur suppression:', error);
       this.showToast('Erreur lors de la suppression', 'error');
+    }
+  }
+
+  toggleEditMode() {
+    const details = document.getElementById('reservation-details');
+    const editBtn = document.getElementById('edit-reservation-btn');
+    const deleteBtn = document.getElementById('delete-reservation-btn');
+    const closeBtn = document.querySelector('.modal-close');
+
+    if (details.classList.contains('edit-mode')) {
+      // Save changes
+      this.saveReservationChanges();
+    } else {
+      // Enter edit mode
+      const id = editBtn.dataset.id;
+      const reservation = this.reservations.find(r => r.id === parseInt(id));
+      if (!reservation) return;
+
+      details.innerHTML = `
+        <form id="edit-reservation-form">
+          <div class="form-group">
+            <label for="edit-name">Nom :</label>
+            <input type="text" id="edit-name" name="name" value="${this.escapeHtml(reservation.name)}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-email">Email :</label>
+            <input type="email" id="edit-email" name="email" value="${this.escapeHtml(reservation.email)}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-phone">Téléphone :</label>
+            <input type="tel" id="edit-phone" name="phone" value="${this.escapeHtml(reservation.phone || '')}">
+          </div>
+          <div class="form-group">
+            <label for="edit-date">Date :</label>
+            <input type="date" id="edit-date" name="date" value="${reservation.date}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-time">Heure :</label>
+            <input type="time" id="edit-time" name="time" value="${reservation.time}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-guests">Nombre de personnes :</label>
+            <input type="number" id="edit-guests" name="guests" min="1" max="20" value="${reservation.guests}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-message">Message :</label>
+            <textarea id="edit-message" name="message" rows="3">${this.escapeHtml(reservation.message || '')}</textarea>
+          </div>
+        </form>
+      `;
+
+      details.classList.add('edit-mode');
+      editBtn.textContent = 'Sauvegarder';
+      deleteBtn.style.display = 'none';
+      closeBtn.style.display = 'none';
+    }
+  }
+
+  async saveReservationChanges() {
+    const form = document.getElementById('edit-reservation-form');
+    if (!form) return;
+
+    const formData = new FormData(form);
+    const id = document.getElementById('edit-reservation-btn').dataset.id;
+    const payload = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      date: formData.get('date'),
+      time: formData.get('time'),
+      guests: parseInt(formData.get('guests')),
+      message: formData.get('message')
+    };
+
+    try {
+      const response = await fetch(`/api/reservations/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Basic ' + this.authToken
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        // Update local data
+        const index = this.reservations.findIndex(r => r.id === parseInt(id));
+        if (index !== -1) {
+          this.reservations[index] = { ...this.reservations[index], ...payload };
+        }
+
+        this.renderReservations();
+        this.loadStats();
+        this.showReservationDetails(parseInt(id)); // Refresh details view
+        this.showToast('Réservation modifiée avec succès');
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Erreur de modification');
+      }
+    } catch (error) {
+      console.error('Erreur modification:', error);
+      this.showToast('Erreur lors de la modification', 'error');
     }
   }
 
