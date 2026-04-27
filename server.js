@@ -6,12 +6,8 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const dbPath = path.join(__dirname, 'reservations.db');
-const managerUsername = process.env.MANAGER_USERNAME || 'manager';
-const managerPassword = process.env.MANAGER_PASSWORD || 'ChangeMeNow!';
-
-if (!process.env.MANAGER_USERNAME || !process.env.MANAGER_PASSWORD) {
-  console.warn("Identifiants gérant non définis. Utilisation des valeurs par défaut, à changer en production.");
-}
+const managerUsername = process.env.MANAGER_USERNAME;
+const managerPassword = process.env.MANAGER_PASSWORD;
 
 function parseReservationDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {

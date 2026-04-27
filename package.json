@@ -4,8 +4,7 @@
   "description": "Site ergonomique pour un restaurant imaginaire avec réservation en base de données.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -14,8 +13,5 @@
   },
   "engines": {
     "node": ">=16"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.14"
   }
 }
