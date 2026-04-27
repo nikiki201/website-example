@@ -226,6 +226,49 @@ app.put('/api/user-reservations/:id', (req, res) => {
   });
 });
 
+app.delete('/api/user-reservations/:id', (req, res) => {
+  const reservationId = Number.parseInt(req.params.id, 10);
+  const { email } = req.body;
+
+  if (!Number.isInteger(reservationId) || reservationId <= 0) {
+    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+  }
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email requis pour l\'annulation.' });
+  }
+
+  db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Impossible de recuperer la reservation.' });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Reservation introuvable.' });
+    }
+
+    if (row.email.toLowerCase() !== String(email).trim().toLowerCase()) {
+      return res.status(403).json({ error: 'Email non conforme a la reservation.' });
+    }
+
+    if (!canModifyReservation(row.date, row.time)) {
+      return res.status(403).json({ error: 'Cette reservation ne peut plus etre annulee : moins de 48 heures restantes.' });
+    }
+
+    db.run('DELETE FROM reservations WHERE id = ?', [reservationId], function onDelete(deleteErr) {
+      if (deleteErr) {
+        return res.status(500).json({ error: 'Impossible d\'annuler la reservation.' });
+      }
+
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Reservation introuvable.' });
+      }
+
+      return res.json({ message: 'Reservation annulee avec succes.' });
+    });
+  });
+});
+
 app.get('/api/reservations', (req, res) => {
   db.all('SELECT * FROM reservations ORDER BY created_at DESC', (err, rows) => {
     if (err) {

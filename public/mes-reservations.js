@@ -103,7 +103,7 @@ function renderCard(reservation) {
       <p class="reservation-note">${past ? 'Cette r�servation est pass�e.' : canModify ? 'Modification possible jusqu�� 48 heures avant.' : 'Modification non disponible : moins de 48 heures restantes.'}</p>
     </div>
     <div class="reservation-card-actions">
-      ${!past && canModify ? `<button class="button" type="button" data-edit-id="${reservation.id}">Modifier</button>` : ''}
+      ${!past && canModify ? `<button class="button" type="button" data-edit-id="${reservation.id}">Modifier</button> <button class="button button-danger" type="button" data-cancel-id="${reservation.id}">Annuler</button>` : ''}
     </div>
   `;
 
@@ -195,21 +195,26 @@ function toggleEditForm(card, reservation) {
   `;
 }
 
-async function updateReservation(id, payload) {
+async function cancelReservation(id) {
+  const confirmed = window.confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');
+  if (!confirmed) {
+    return;
+  }
+
   try {
-    showStatus('Enregistrement des modifications...', 'info');
+    showStatus('Annulation en cours...', 'info');
     const response = await fetch(`/api/user-reservations/${id}`, {
-      method: 'PUT',
+      method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ email: currentEmail }),
     });
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Impossible de modifier la reservation.');
+      throw new Error(data.error || 'Impossible d\'annuler la réservation.');
     }
 
-    showStatus('Reservation mise a jour avec succes.', 'info');
+    showStatus('Réservation annulée avec succès.', 'info');
     await fetchReservations(currentEmail);
   } catch (error) {
     showStatus(error.message, 'error');
@@ -230,7 +235,8 @@ form.addEventListener('submit', (event) => {
 
 reservationsContainer.addEventListener('click', (event) => {
   const editButton = event.target.closest('[data-edit-id]');
-  const cancelButton = event.target.closest('[data-cancel-edit]');
+  const cancelButton = event.target.closest('[data-cancel-id]');
+  const cancelEditButton = event.target.closest('[data-cancel-edit]');
 
   if (editButton) {
     const reservationId = Number(editButton.dataset.editId);
@@ -243,6 +249,11 @@ reservationsContainer.addEventListener('click', (event) => {
   }
 
   if (cancelButton) {
+    const reservationId = Number(cancelButton.dataset.cancelId);
+    cancelReservation(reservationId);
+  }
+
+  if (cancelEditButton) {
     renderReservations(currentReservations);
   }
 });
