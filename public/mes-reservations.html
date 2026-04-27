@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mes réservations - Bistro du Quai</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="logo">Bistro du Quai</span>
+        <p>Consultez et modifiez vos réservations</p>
+      </div>
+      <nav class="site-nav">
+        <a href="/">Accueil</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section container user-reservations-section">
+      <div class="section-header">
+        <h2>Mes réservations</h2>
+        <p>Recherchez vos réservations avec votre email pour consulter vos réservations passées et actuelles. Vous pouvez modifier une réservation tant que nous sommes à plus de 48 heures de l'heure prévue.</p>
+      </div>
+
+      <form id="user-search-form" class="reservation-form">
+        <label>
+          Email utilisé lors de la réservation
+          <input id="user-email" type="email" name="email" required placeholder="jean@example.com" />
+        </label>
+        <button class="button" type="submit">Rechercher mes réservations</button>
+        <p id="user-status" class="form-status" aria-live="polite"></p>
+      </form>
+
+      <div id="user-reservations" class="reservations-result"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; 2026 Bistro du Quai. Tous droits réservés.</p>
+      <p>Gérez vos réservations en quelques clics.</p>
+    </div>
+  </footer>
+
+  <script src="mes-reservations.js"></script>
+</body>
+</html>

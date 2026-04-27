@@ -131,6 +131,101 @@ app.post('/api/reservations', (req, res) => {
   });
 });
 
+function parseReservationDateTime(dateValue, timeValue) {
+  if (typeof dateValue !== 'string' || typeof timeValue !== 'string') {
+    return null;
+  }
+
+  const date = parseReservationDate(dateValue);
+  if (!date) {
+    return null;
+  }
+
+  const timeParts = timeValue.split(':').map(Number);
+  if (timeParts.length !== 2 || timeParts.some((part) => Number.isNaN(part))) {
+    return null;
+  }
+
+  date.setHours(timeParts[0], timeParts[1], 0, 0);
+  return date;
+}
+
+function canModifyReservation(dateValue, timeValue) {
+  const reservationDate = parseReservationDateTime(dateValue, timeValue);
+  if (!reservationDate) {
+    return false;
+  }
+
+  return reservationDate.getTime() - Date.now() >= 48 * 60 * 60 * 1000;
+}
+
+app.get('/api/user-reservations', (req, res) => {
+  const email = String(req.query.email || '').trim();
+  if (!email) {
+    return res.status(400).json({ error: 'Email requis.' });
+  }
+
+  db.all(
+    'SELECT * FROM reservations WHERE lower(email) = ? ORDER BY date DESC, time DESC',
+    [email.toLowerCase()],
+    (err, rows) => {
+      if (err) {
+        return res.status(500).json({ error: 'Impossible de recuperer les reservations.' });
+      }
+
+      return res.json(rows);
+    }
+  );
+});
+
+app.put('/api/user-reservations/:id', (req, res) => {
+  const reservationId = Number.parseInt(req.params.id, 10);
+  const { email, date, time, guests, message } = req.body;
+
+  if (!Number.isInteger(reservationId) || reservationId <= 0) {
+    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+  }
+
+  if (!email || !date || !time || !guests) {
+    return res.status(400).json({ error: 'Veuillez renseigner tous les champs requis.' });
+  }
+
+  const newDateTime = parseReservationDateTime(date, time);
+  if (!newDateTime || newDateTime.getTime() <= Date.now()) {
+    return res.status(400).json({ error: 'Date et heure de reservation invalides ou passees.' });
+  }
+
+  db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Impossible de recuperer la reservation.' });
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: 'Reservation introuvable.' });
+    }
+
+    if (row.email.toLowerCase() !== String(email).trim().toLowerCase()) {
+      return res.status(403).json({ error: 'Email non conforme a la reservation.' });
+    }
+
+    if (!canModifyReservation(row.date, row.time)) {
+      return res.status(403).json({ error: 'Cette reservation ne peut plus etre modifiee : moins de 48 heures restantes.' });
+    }
+
+    db.run(
+      'UPDATE reservations SET date = ?, time = ?, guests = ?, message = ? WHERE id = ?',
+      [date, time, guests, message || '', reservationId],
+      function onUpdate(updateErr) {
+        if (updateErr) {
+          return res.status(500).json({ error: 'Impossible de mettre a jour la reservation.' });
+        }
+
+        return res.json({ message: 'Reservation modifiee avec succes.' });
+      }
+    );
+  });
+});
+
 app.get('/api/reservations', (req, res) => {
   db.all('SELECT * FROM reservations ORDER BY created_at DESC', (err, rows) => {
     if (err) {
