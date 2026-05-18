@@ -1,13 +1,25 @@
 const express = require('express');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const dbPath = path.join(__dirname, 'reservations.db');
 const managerUsername = process.env.MANAGER_USERNAME;
 const managerPassword = process.env.MANAGER_PASSWORD;
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  console.error('DATABASE_URL is required. Configure a PostgreSQL database before starting the server.');
+  process.exit(1);
+}
+
+const pool = new Pool({
+  connectionString: databaseUrl,
+  ssl: databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1')
+    ? false
+    : { rejectUnauthorized: false },
+});
 
 function parseReservationDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -69,67 +81,42 @@ function requireManagerAuth(req, res, next) {
   return next();
 }
 
-app.use(cors());
-app.use(express.json());
-app.use(['/reservations', '/reservations.html', '/api/reservations'], (req, res, next) => {
-  if (req.method === 'POST') {
-    return next();
+async function query(sql, params = []) {
+  const result = await pool.query(sql, params);
+  return result;
+}
+
+function normalizeReservation(row) {
+  if (!row) {
+    return row;
   }
 
-  return requireManagerAuth(req, res, next);
-});
-app.use(express.static(path.join(__dirname, 'public')));
+  return {
+    ...row,
+    date: row.date instanceof Date ? row.date.toISOString().slice(0, 10) : row.date,
+    created_at: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at,
+  };
+}
 
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Database connection failed', err.message);
-    process.exit(1);
-  }
-});
+function normalizeReservations(rows) {
+  return rows.map(normalizeReservation);
+}
 
-db.serialize(() => {
-  db.run(
-    `CREATE TABLE IF NOT EXISTS reservations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+async function initializeDatabase() {
+  await query(`
+    CREATE TABLE IF NOT EXISTS reservations (
+      id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       phone TEXT,
-      date TEXT NOT NULL,
-      time TEXT NOT NULL,
+      date DATE NOT NULL,
+      time TIME NOT NULL,
       guests INTEGER NOT NULL,
       message TEXT,
-      created_at TEXT NOT NULL
-    )`
-  );
-});
-
-app.post('/api/reservations', (req, res) => {
-  const { name, email, phone, date, time, guests, message } = req.body;
-
-  if (!name || !email || !date || !time || !guests) {
-    return res.status(400).json({ error: 'Please fill in all required fields.' });
-  }
-
-  if (!parseReservationDate(date)) {
-    return res.status(400).json({ error: 'The reservation date is invalid.' });
-  }
-
-  if (isPastReservationDate(date)) {
-    return res.status(400).json({ error: 'The reservation date cannot be earlier than today.' });
-  }
-
-  const createdAt = new Date().toISOString();
-  const query = 'INSERT INTO reservations (name, email, phone, date, time, guests, message, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-
-  db.run(query, [name, email, phone || '', date, time, guests, message || '', createdAt], function onInsert(err) {
-    if (err) {
-      console.error('Reservation insert failed', err.message);
-      return res.status(500).json({ error: 'Unable to save the reservation.' });
-    }
-
-    return res.status(201).json({ id: this.lastID, message: 'Reservation saved successfully.' });
-  });
-});
+      created_at TIMESTAMPTZ NOT NULL
+    )
+  `);
+}
 
 function parseReservationDateTime(dateValue, timeValue) {
   if (typeof dateValue !== 'string' || typeof timeValue !== 'string') {
@@ -159,26 +146,71 @@ function canModifyReservation(dateValue, timeValue) {
   return reservationDate.getTime() - Date.now() >= 48 * 60 * 60 * 1000;
 }
 
-app.get('/api/user-reservations', (req, res) => {
+app.use(cors());
+app.use(express.json());
+app.use(['/reservations', '/reservations.html', '/api/reservations'], (req, res, next) => {
+  if (req.method === 'POST') {
+    return next();
+  }
+
+  return requireManagerAuth(req, res, next);
+});
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.post('/api/reservations', async (req, res) => {
+  const { name, email, phone, date, time, guests, message } = req.body;
+
+  if (!name || !email || !date || !time || !guests) {
+    return res.status(400).json({ error: 'Please fill in all required fields.' });
+  }
+
+  if (!parseReservationDate(date)) {
+    return res.status(400).json({ error: 'The reservation date is invalid.' });
+  }
+
+  if (isPastReservationDate(date)) {
+    return res.status(400).json({ error: 'The reservation date cannot be earlier than today.' });
+  }
+
+  try {
+    const createdAt = new Date().toISOString();
+    const result = await query(
+      `INSERT INTO reservations (name, email, phone, date, time, guests, message, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id`,
+      [name, email, phone || '', date, time, guests, message || '', createdAt]
+    );
+
+    return res.status(201).json({ id: result.rows[0].id, message: 'Reservation saved successfully.' });
+  } catch (err) {
+    console.error('Reservation insert failed', err.message);
+    return res.status(500).json({ error: 'Unable to save the reservation.' });
+  }
+});
+
+app.get('/api/user-reservations', async (req, res) => {
   const email = String(req.query.email || '').trim();
   if (!email) {
     return res.status(400).json({ error: 'Email is required.' });
   }
 
-  db.all(
-    'SELECT * FROM reservations WHERE lower(email) = ? ORDER BY date DESC, time DESC',
-    [email.toLowerCase()],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: 'Unable to retrieve reservations.' });
-      }
+  try {
+    const result = await query(
+      `SELECT id, name, email, phone, date::text, to_char(time, 'HH24:MI') AS time, guests, message, created_at
+       FROM reservations
+       WHERE lower(email) = $1
+       ORDER BY date DESC, time DESC`,
+      [email.toLowerCase()]
+    );
 
-      return res.json(rows);
-    }
-  );
+    return res.json(normalizeReservations(result.rows));
+  } catch (err) {
+    console.error('User reservations query failed', err.message);
+    return res.status(500).json({ error: 'Unable to retrieve reservations.' });
+  }
 });
 
-app.put('/api/user-reservations/:id', (req, res) => {
+app.put('/api/user-reservations/:id', async (req, res) => {
   const reservationId = Number.parseInt(req.params.id, 10);
   const { email, date, time, guests, message } = req.body;
 
@@ -195,10 +227,14 @@ app.put('/api/user-reservations/:id', (req, res) => {
     return res.status(400).json({ error: 'Reservation date and time are invalid or in the past.' });
   }
 
-  db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to retrieve the reservation.' });
-    }
+  try {
+    const current = await query(
+      `SELECT id, email, date::text, to_char(time, 'HH24:MI') AS time
+       FROM reservations
+       WHERE id = $1`,
+      [reservationId]
+    );
+    const row = current.rows[0];
 
     if (!row) {
       return res.status(404).json({ error: 'Reservation not found.' });
@@ -212,21 +248,19 @@ app.put('/api/user-reservations/:id', (req, res) => {
       return res.status(403).json({ error: 'This reservation can no longer be edited because less than 48 hours remain.' });
     }
 
-    db.run(
-      'UPDATE reservations SET date = ?, time = ?, guests = ?, message = ? WHERE id = ?',
-      [date, time, guests, message || '', reservationId],
-      function onUpdate(updateErr) {
-        if (updateErr) {
-          return res.status(500).json({ error: 'Unable to update the reservation.' });
-        }
-
-        return res.json({ message: 'Reservation updated successfully.' });
-      }
+    await query(
+      'UPDATE reservations SET date = $1, time = $2, guests = $3, message = $4 WHERE id = $5',
+      [date, time, guests, message || '', reservationId]
     );
-  });
+
+    return res.json({ message: 'Reservation updated successfully.' });
+  } catch (err) {
+    console.error('User reservation update failed', err.message);
+    return res.status(500).json({ error: 'Unable to update the reservation.' });
+  }
 });
 
-app.delete('/api/user-reservations/:id', (req, res) => {
+app.delete('/api/user-reservations/:id', async (req, res) => {
   const reservationId = Number.parseInt(req.params.id, 10);
   const { email } = req.body;
 
@@ -238,10 +272,14 @@ app.delete('/api/user-reservations/:id', (req, res) => {
     return res.status(400).json({ error: 'Email is required to cancel.' });
   }
 
-  db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to retrieve the reservation.' });
-    }
+  try {
+    const current = await query(
+      `SELECT id, email, date::text, to_char(time, 'HH24:MI') AS time
+       FROM reservations
+       WHERE id = $1`,
+      [reservationId]
+    );
+    const row = current.rows[0];
 
     if (!row) {
       return res.status(404).json({ error: 'Reservation not found.' });
@@ -255,31 +293,34 @@ app.delete('/api/user-reservations/:id', (req, res) => {
       return res.status(403).json({ error: 'This reservation can no longer be cancelled because less than 48 hours remain.' });
     }
 
-    db.run('DELETE FROM reservations WHERE id = ?', [reservationId], function onDelete(deleteErr) {
-      if (deleteErr) {
-        return res.status(500).json({ error: 'Unable to cancel the reservation.' });
-      }
-
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Reservation not found.' });
-      }
-
-      return res.json({ message: 'Reservation cancelled successfully.' });
-    });
-  });
-});
-
-app.get('/api/reservations', (req, res) => {
-  db.all('SELECT * FROM reservations ORDER BY created_at DESC', (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to retrieve reservations.' });
+    const deleted = await query('DELETE FROM reservations WHERE id = $1', [reservationId]);
+    if (deleted.rowCount === 0) {
+      return res.status(404).json({ error: 'Reservation not found.' });
     }
 
-    return res.json(rows);
-  });
+    return res.json({ message: 'Reservation cancelled successfully.' });
+  } catch (err) {
+    console.error('User reservation delete failed', err.message);
+    return res.status(500).json({ error: 'Unable to cancel the reservation.' });
+  }
 });
 
-app.put('/api/reservations/:id', (req, res) => {
+app.get('/api/reservations', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, name, email, phone, date::text, to_char(time, 'HH24:MI') AS time, guests, message, created_at
+       FROM reservations
+       ORDER BY created_at DESC`
+    );
+
+    return res.json(normalizeReservations(result.rows));
+  } catch (err) {
+    console.error('Reservations query failed', err.message);
+    return res.status(500).json({ error: 'Unable to retrieve reservations.' });
+  }
+});
+
+app.put('/api/reservations/:id', async (req, res) => {
   const reservationId = Number.parseInt(req.params.id, 10);
   const { name, email, phone, date, time, guests, message } = req.body;
 
@@ -296,47 +337,43 @@ app.put('/api/reservations/:id', (req, res) => {
     return res.status(400).json({ error: 'Reservation date and time are invalid.' });
   }
 
-  db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to retrieve the reservation.' });
-    }
+  try {
+    const updated = await query(
+      `UPDATE reservations
+       SET name = $1, email = $2, phone = $3, date = $4, time = $5, guests = $6, message = $7
+       WHERE id = $8`,
+      [name, email, phone || '', date, time, guests, message || '', reservationId]
+    );
 
-    if (!row) {
+    if (updated.rowCount === 0) {
       return res.status(404).json({ error: 'Reservation not found.' });
     }
 
-    db.run(
-      'UPDATE reservations SET name = ?, email = ?, phone = ?, date = ?, time = ?, guests = ?, message = ? WHERE id = ?',
-      [name, email, phone || '', date, time, guests, message || '', reservationId],
-      function onUpdate(updateErr) {
-        if (updateErr) {
-          return res.status(500).json({ error: 'Unable to update the reservation.' });
-        }
-
-        return res.json({ message: 'Reservation updated successfully.' });
-      }
-    );
-  });
+    return res.json({ message: 'Reservation updated successfully.' });
+  } catch (err) {
+    console.error('Reservation update failed', err.message);
+    return res.status(500).json({ error: 'Unable to update the reservation.' });
+  }
 });
 
-app.delete('/api/reservations/:id', (req, res) => {
+app.delete('/api/reservations/:id', async (req, res) => {
   const reservationId = Number.parseInt(req.params.id, 10);
 
   if (!Number.isInteger(reservationId) || reservationId <= 0) {
     return res.status(400).json({ error: 'Invalid reservation ID.' });
   }
 
-  db.run('DELETE FROM reservations WHERE id = ?', [reservationId], function onDelete(err) {
-    if (err) {
-      return res.status(500).json({ error: 'Unable to delete the reservation.' });
-    }
-
-    if (this.changes === 0) {
+  try {
+    const deleted = await query('DELETE FROM reservations WHERE id = $1', [reservationId]);
+    if (deleted.rowCount === 0) {
       return res.status(404).json({ error: 'Reservation not found.' });
     }
 
     return res.json({ message: 'Reservation deleted successfully.' });
-  });
+  } catch (err) {
+    console.error('Reservation delete failed', err.message);
+    return res.status(500).json({ error: 'Unable to delete the reservation.' });
+  }
 });
 
 app.get('/reservations', (req, res) => {
@@ -347,6 +384,21 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+async function startServer() {
+  try {
+    await initializeDatabase();
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('Database initialization failed', err.message);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+process.on('SIGINT', async () => {
+  await pool.end();
+  process.exit(0);
 });
