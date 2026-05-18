@@ -5,6 +5,7 @@ class MobileAdmin {
     this.currentFilter = 'all';
     this.currentTab = 'reservations';
     this.authToken = null;
+    this.refreshTimer = null;
 
     this.init();
   }
@@ -82,7 +83,7 @@ class MobileAdmin {
         this.authToken = btoa(username + ':' + password);
         localStorage.setItem('adminAuth', this.authToken);
         this.showApp();
-        this.loadReservations();
+        await this.loadReservations();
         this.loadStats();
       } else {
         this.showLoginError('Incorrect credentials');
@@ -96,6 +97,7 @@ class MobileAdmin {
   handleLogout() {
     this.authToken = null;
     localStorage.removeItem('adminAuth');
+    this.stopAutoRefresh();
     this.showLogin();
   }
 
@@ -104,8 +106,7 @@ class MobileAdmin {
     if (savedAuth) {
       this.authToken = savedAuth;
       this.showApp();
-      this.loadReservations();
-      this.loadStats();
+      this.loadReservations().then(() => this.loadStats());
     } else {
       this.showLogin();
     }
@@ -119,6 +120,23 @@ class MobileAdmin {
   showApp() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-screen').style.display = 'flex';
+    this.startAutoRefresh();
+  }
+
+  startAutoRefresh() {
+    this.stopAutoRefresh();
+    this.refreshTimer = window.setInterval(() => {
+      if (this.authToken) {
+        this.loadReservations({ silent: true }).then(() => this.loadStats());
+      }
+    }, 5000);
+  }
+
+  stopAutoRefresh() {
+    if (this.refreshTimer) {
+      window.clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
   }
 
   showLoginError(message) {
@@ -147,7 +165,9 @@ class MobileAdmin {
     }
   }
 
-  async loadReservations() {
+  async loadReservations(options = {}) {
+    const previousIds = new Set(this.reservations.map((reservation) => reservation.id));
+
     try {
       const response = await fetch('/api/reservations', {
         headers: {
@@ -156,8 +176,15 @@ class MobileAdmin {
       });
 
       if (response.ok) {
-        this.reservations = await response.json();
+        const nextReservations = await response.json();
+        const hasNewReservation = nextReservations.some((reservation) => !previousIds.has(reservation.id));
+
+        this.reservations = nextReservations;
         this.renderReservations();
+
+        if (options.silent && hasNewReservation && previousIds.size > 0) {
+          this.showToast('New reservation received');
+        }
       } else if (response.status === 401) {
         this.handleLogout();
       } else {
@@ -170,10 +197,6 @@ class MobileAdmin {
   }
 
   async loadStats() {
-    if (this.reservations.length === 0) {
-      await this.loadReservations();
-    }
-
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
