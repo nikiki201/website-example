@@ -16,9 +16,7 @@ if (!databaseUrl) {
 
 const pool = new Pool({
   connectionString: databaseUrl,
-  ssl: databaseUrl.includes('localhost') || databaseUrl.includes('127.0.0.1')
-    ? false
-    : { rejectUnauthorized: false },
+  ssl: { rejectUnauthorized: false },
 });
 
 function parseReservationDate(value) {
@@ -388,7 +386,7 @@ async function startServer() {
   try {
     await initializeDatabase();
     app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   } catch (err) {
     console.error('Database initialization failed', err.message);

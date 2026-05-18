@@ -25,26 +25,6 @@ Website for Mee Noodle at Damstraat 1, 1012 JL Amsterdam, with online reservatio
 - Basic-auth protected manager area
 - Mobile PWA admin interface
 
-## Run Locally
-
-```bash
-set DATABASE_URL=postgresql://user:password@localhost:5432/restaurant_website
-set MANAGER_USERNAME=admin
-set MANAGER_PASSWORD=your_password
-npm start
-```
-
-The site runs at `http://localhost:3000`.
-
-On PowerShell, use:
-
-```powershell
-$env:DATABASE_URL="postgresql://user:password@localhost:5432/restaurant_website"
-$env:MANAGER_USERNAME="admin"
-$env:MANAGER_PASSWORD="your_password"
-npm start
-```
-
 ## Manager Access
 
 Set these environment variables before using the manager pages:
@@ -54,6 +34,15 @@ Set these environment variables before using the manager pages:
 - `DATABASE_URL`
 
 On Render, create a PostgreSQL database and copy its internal connection string into the web service environment variable `DATABASE_URL`.
+
+## Render Deployment
+
+1. Create a Render PostgreSQL database.
+2. Copy the database internal connection string.
+3. Add it to the Render Web Service as `DATABASE_URL`.
+4. Add `MANAGER_USERNAME` and `MANAGER_PASSWORD`.
+5. Deploy the latest GitHub commit.
+6. Open the public site and admin page from the same Render domain.
 
 ## Notes
 
