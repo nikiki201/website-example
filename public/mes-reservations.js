@@ -35,7 +35,7 @@ function formatDateTime(dateString, timeString) {
     return `${dateString} ${timeString}`;
   }
 
-  return date.toLocaleString('fr-FR', {
+  return date.toLocaleString('en-GB', {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
@@ -93,17 +93,17 @@ function renderCard(reservation) {
     <div class="reservation-card-header">
       <div>
         <h3>${escapeHtml(reservation.name)}</h3>
-        <p class="mute">${escapeHtml(reservation.email)} · ${escapeHtml(reservation.phone || 'Pas de telephone')}</p>
+        <p class="mute">${escapeHtml(reservation.email)} - ${escapeHtml(reservation.phone || 'No phone')}</p>
       </div>
-      <span class="pill">${escapeHtml(reservation.guests)} pers.</span>
+      <span class="pill">${escapeHtml(reservation.guests)} guests</span>
     </div>
     <div class="reservation-card-body">
-      <p><strong>Reservation :</strong> ${escapeHtml(reservationDate)}</p>
-      <p><strong>Message :</strong> ${escapeHtml(reservation.message || 'Aucun message')}</p>
-      <p class="reservation-note">${past ? 'Cette r�servation est pass�e.' : canModify ? 'Modification possible jusqu�� 48 heures avant.' : 'Modification non disponible : moins de 48 heures restantes.'}</p>
+      <p><strong>Reservation:</strong> ${escapeHtml(reservationDate)}</p>
+      <p><strong>Message:</strong> ${escapeHtml(reservation.message || 'No message')}</p>
+      <p class="reservation-note">${past ? 'This reservation is in the past.' : canModify ? 'Changes are possible up to 48 hours before the reservation.' : 'Changes are not available with less than 48 hours remaining.'}</p>
     </div>
     <div class="reservation-card-actions">
-      ${!past && canModify ? `<button class="button" type="button" data-edit-id="${reservation.id}">Modifier</button> <button class="button button-danger" type="button" data-cancel-id="${reservation.id}">Annuler</button>` : ''}
+      ${!past && canModify ? `<button class="button" type="button" data-edit-id="${reservation.id}">Edit</button> <button class="button button-danger" type="button" data-cancel-id="${reservation.id}">Cancel</button>` : ''}
     </div>
   `;
 
@@ -117,7 +117,7 @@ function renderReservations(items) {
   if (!currentReservations.length) {
     reservationsContainer.innerHTML = `
       <div class="info-card">
-        Aucune reservation trouvee. Verifiez l'adresse email utilisee lors de la reservation.
+        No reservations found. Check the email address used for the reservation.
       </div>
     `;
     return;
@@ -129,7 +129,7 @@ function renderReservations(items) {
 
   if (upcoming.length) {
     const section = document.createElement('section');
-    section.innerHTML = '<h3>Reservations actuelles</h3>';
+    section.innerHTML = '<h3>Upcoming reservations</h3>';
     const grid = document.createElement('div');
     grid.className = 'reservations-grid';
     upcoming.forEach((reservation) => grid.appendChild(renderCard(reservation)));
@@ -139,7 +139,7 @@ function renderReservations(items) {
 
   if (past.length) {
     const section = document.createElement('section');
-    section.innerHTML = '<h3>Reservations passees</h3>';
+    section.innerHTML = '<h3>Past reservations</h3>';
     const grid = document.createElement('div');
     grid.className = 'reservations-grid';
     past.forEach((reservation) => grid.appendChild(renderCard(reservation)));
@@ -150,12 +150,12 @@ function renderReservations(items) {
 
 async function fetchReservations(email) {
   try {
-    showStatus('Recherche en cours...', 'info');
+    showStatus('Searching...', 'info');
     const response = await fetch(`/api/user-reservations?email=${encodeURIComponent(email)}`);
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Impossible de recuperer les reservations.');
+      throw new Error(data.error || 'Unable to load reservations.');
     }
 
     clearStatus();
@@ -175,11 +175,11 @@ function toggleEditForm(card, reservation) {
           <input type="date" name="date" value="${escapeHtml(reservation.date)}" min="${getTodayIsoDate()}" required />
         </label>
         <label>
-          Heure
+          Time
           <input type="time" name="time" value="${escapeHtml(reservation.time)}" required />
         </label>
         <label>
-          Nombre de personnes
+          Number of guests
           <input type="number" name="guests" min="1" max="20" value="${escapeHtml(reservation.guests)}" required />
         </label>
         <label class="full-width">
@@ -188,21 +188,21 @@ function toggleEditForm(card, reservation) {
         </label>
       </div>
       <div class="reservation-card-actions">
-        <button class="button" type="submit">Enregistrer</button>
-        <button class="button button-danger" type="button" data-cancel-edit="${reservation.id}">Annuler</button>
+        <button class="button" type="submit">Save</button>
+        <button class="button button-danger" type="button" data-cancel-edit="${reservation.id}">Cancel</button>
       </div>
     </form>
   `;
 }
 
 async function cancelReservation(id) {
-  const confirmed = window.confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Cette action est irréversible.');
+  const confirmed = window.confirm('Are you sure you want to cancel this reservation? This action cannot be undone.');
   if (!confirmed) {
     return;
   }
 
   try {
-    showStatus('Annulation en cours...', 'info');
+    showStatus('Cancelling...', 'info');
     const response = await fetch(`/api/user-reservations/${id}`, {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -211,10 +211,31 @@ async function cancelReservation(id) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Impossible d\'annuler la réservation.');
+      throw new Error(data.error || 'Unable to cancel the reservation.');
     }
 
-    showStatus('Réservation annulée avec succès.', 'info');
+    showStatus('Reservation cancelled successfully.', 'info');
+    await fetchReservations(currentEmail);
+  } catch (error) {
+    showStatus(error.message, 'error');
+  }
+}
+
+async function updateReservation(id, payload) {
+  try {
+    showStatus('Saving changes...', 'info');
+    const response = await fetch(`/api/user-reservations/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Unable to update the reservation.');
+    }
+
+    showStatus('Reservation updated successfully.', 'info');
     await fetchReservations(currentEmail);
   } catch (error) {
     showStatus(error.message, 'error');
@@ -226,7 +247,7 @@ form.addEventListener('submit', (event) => {
   currentEmail = emailInput.value.trim();
 
   if (!currentEmail) {
-    showStatus('Veuillez saisir une adresse email valide.', 'error');
+    showStatus('Please enter a valid email address.', 'error');
     return;
   }
 

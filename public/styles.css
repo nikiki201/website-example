@@ -73,6 +73,31 @@ img {
   color: var(--text);
 }
 
+.language-switcher {
+  display: inline-flex;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+}
+
+.language-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.language-button.active {
+  background: var(--primary);
+  color: #fff;
+}
+
 .hero {
   padding: 4rem 0 2rem;
 }
@@ -371,6 +396,10 @@ textarea {
   }
 
   .site-nav {
+    justify-content: center;
+  }
+
+  .language-switcher {
     justify-content: center;
   }
 }

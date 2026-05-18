@@ -1,7 +1,7 @@
 {
-  "name": "Bistro Admin",
-  "short_name": "BistroAdmin",
-  "description": "Application mobile de gestion des réservations du Bistro du Quai",
+  "name": "Mee Noodle Admin",
+  "short_name": "MeeAdmin",
+  "description": "Mobile reservation management app for Mee Noodle",
   "start_url": "/mobile-admin.html",
   "display": "standalone",
   "background_color": "#f4f4f4",
@@ -23,5 +23,5 @@
     }
   ],
   "categories": ["business", "productivity"],
-  "lang": "fr"
+  "lang": "en"
 }

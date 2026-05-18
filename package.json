@@ -1,7 +1,7 @@
 {
   "name": "restaurant-website",
   "version": "1.0.0",
-  "description": "Site ergonomique pour un restaurant imaginaire avec réservation en base de données.",
+  "description": "Website for Mee Noodle Amsterdam with online reservations.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

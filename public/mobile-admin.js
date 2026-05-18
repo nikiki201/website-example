@@ -83,7 +83,7 @@ class MobileAdmin {
         this.showLoginError('Identifiants incorrects');
       }
     } catch (error) {
-      this.showLoginError('Erreur de connexion');
+      this.showLoginError('Connection error');
       console.error(error);
     }
   }
@@ -156,11 +156,11 @@ class MobileAdmin {
       } else if (response.status === 401) {
         this.handleLogout();
       } else {
-        throw new Error('Erreur de chargement');
+        throw new Error('Loading error');
       }
     } catch (error) {
-      console.error('Erreur chargement réservations:', error);
-      this.showToast('Erreur de chargement des réservations', 'error');
+      console.error('Reservation loading error:', error);
+      this.showToast('Reservation loading error', 'error');
     }
   }
 
@@ -196,22 +196,22 @@ class MobileAdmin {
     if (filteredReservations.length === 0) {
       reservationsList.innerHTML = '';
       emptyState.style.display = 'block';
-      countText.textContent = '0 réservation';
+      countText.textContent = '0 reservations';
       return;
     }
 
     emptyState.style.display = 'none';
-    countText.textContent = `${filteredReservations.length} réservation${filteredReservations.length > 1 ? 's' : ''}`;
+    countText.textContent = `${filteredReservations.length} reservation${filteredReservations.length > 1 ? 's' : ''}`;
 
     reservationsList.innerHTML = filteredReservations.map(reservation => `
       <div class="reservation-card" data-id="${reservation.id}" onclick="mobileAdmin.showReservationDetails(${reservation.id})">
         <div class="reservation-header">
           <h3 class="reservation-name">${this.escapeHtml(reservation.name)}</h3>
-          <span class="reservation-guests">${reservation.guests} pers.</span>
+          <span class="reservation-guests">${reservation.guests} guests</span>
         </div>
         <div class="reservation-info">
           <div>${this.escapeHtml(reservation.email)}</div>
-          <div class="reservation-date">${this.formatDate(reservation.date)} à ${reservation.time}</div>
+          <div class="reservation-date">${this.formatDate(reservation.date)} at ${reservation.time}</div>
         </div>
       </div>
     `).join('');
@@ -276,7 +276,7 @@ class MobileAdmin {
     const details = document.getElementById('reservation-details');
     details.innerHTML = `
       <div class="reservation-detail">
-        <span class="detail-label">Nom :</span>
+        <span class="detail-label">Name:</span>
         <span class="detail-value">${this.escapeHtml(reservation.name)}</span>
       </div>
       <div class="reservation-detail">
@@ -284,19 +284,19 @@ class MobileAdmin {
         <span class="detail-value">${this.escapeHtml(reservation.email)}</span>
       </div>
       <div class="reservation-detail">
-        <span class="detail-label">Téléphone :</span>
-        <span class="detail-value">${this.escapeHtml(reservation.phone || 'Non fourni')}</span>
+        <span class="detail-label">Phone:</span>
+        <span class="detail-value">${this.escapeHtml(reservation.phone || 'Not provided')}</span>
       </div>
       <div class="reservation-detail">
         <span class="detail-label">Date :</span>
         <span class="detail-value">${this.formatDate(reservation.date)}</span>
       </div>
       <div class="reservation-detail">
-        <span class="detail-label">Heure :</span>
+        <span class="detail-label">Time:</span>
         <span class="detail-value">${reservation.time}</span>
       </div>
       <div class="reservation-detail">
-        <span class="detail-label">Nombre de personnes :</span>
+        <span class="detail-label">Number of guests:</span>
         <span class="detail-value">${reservation.guests}</span>
       </div>
       <div class="reservation-detail">
@@ -304,7 +304,7 @@ class MobileAdmin {
         <span class="detail-value">${this.escapeHtml(reservation.message || 'Aucun')}</span>
       </div>
       <div class="reservation-detail">
-        <span class="detail-label">Créée le :</span>
+        <span class="detail-label">Created:</span>
         <span class="detail-value">${this.formatDateTime(reservation.created_at)}</span>
       </div>
     `;
@@ -322,7 +322,7 @@ class MobileAdmin {
     const id = document.getElementById('delete-reservation-btn').dataset.id;
     if (!id) return;
 
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
+    if (!confirm('Are you sure you want to delete this reservation?')) {
       return;
     }
 
@@ -339,13 +339,13 @@ class MobileAdmin {
         this.renderReservations();
         this.loadStats();
         this.closeModal();
-        this.showToast('Réservation supprimée avec succès');
+        this.showToast('Reservation deleted successfully');
       } else {
-        throw new Error('Erreur de suppression');
+        throw new Error('Deletion error');
       }
     } catch (error) {
-      console.error('Erreur suppression:', error);
-      this.showToast('Erreur lors de la suppression', 'error');
+      console.error('Deletion error:', error);
+      this.showToast('Deletion error', 'error');
     }
   }
 
@@ -367,7 +367,7 @@ class MobileAdmin {
       details.innerHTML = `
         <form id="edit-reservation-form">
           <div class="form-group">
-            <label for="edit-name">Nom :</label>
+            <label for="edit-name">Name:</label>
             <input type="text" id="edit-name" name="name" value="${this.escapeHtml(reservation.name)}" required>
           </div>
           <div class="form-group">
@@ -375,7 +375,7 @@ class MobileAdmin {
             <input type="email" id="edit-email" name="email" value="${this.escapeHtml(reservation.email)}" required>
           </div>
           <div class="form-group">
-            <label for="edit-phone">Téléphone :</label>
+            <label for="edit-phone">Phone:</label>
             <input type="tel" id="edit-phone" name="phone" value="${this.escapeHtml(reservation.phone || '')}">
           </div>
           <div class="form-group">
@@ -383,11 +383,11 @@ class MobileAdmin {
             <input type="date" id="edit-date" name="date" value="${reservation.date}" required>
           </div>
           <div class="form-group">
-            <label for="edit-time">Heure :</label>
+            <label for="edit-time">Time:</label>
             <input type="time" id="edit-time" name="time" value="${reservation.time}" required>
           </div>
           <div class="form-group">
-            <label for="edit-guests">Nombre de personnes :</label>
+            <label for="edit-guests">Number of guests:</label>
             <input type="number" id="edit-guests" name="guests" min="1" max="20" value="${reservation.guests}" required>
           </div>
           <div class="form-group">
@@ -398,7 +398,7 @@ class MobileAdmin {
       `;
 
       details.classList.add('edit-mode');
-      editBtn.textContent = 'Sauvegarder';
+      editBtn.textContent = 'Save';
       deleteBtn.style.display = 'none';
       closeBtn.style.display = 'none';
     }
@@ -440,20 +440,20 @@ class MobileAdmin {
         this.renderReservations();
         this.loadStats();
         this.showReservationDetails(parseInt(id)); // Refresh details view
-        this.showToast('Réservation modifiée avec succès');
+        this.showToast('Reservation updated successfully');
       } else {
         const error = await response.json();
-        throw new Error(error.error || 'Erreur de modification');
+        throw new Error(error.error || 'Update error');
       }
     } catch (error) {
-      console.error('Erreur modification:', error);
-      this.showToast('Erreur lors de la modification', 'error');
+      console.error('Update error:', error);
+      this.showToast('Update error', 'error');
     }
   }
 
   formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString('en-GB', {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
@@ -463,7 +463,7 @@ class MobileAdmin {
 
   formatDateTime(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString('en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -504,7 +504,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
   // Show install button if desired
   const installBtn = document.createElement('button');
-  installBtn.textContent = 'Installer l\'app';
+  installBtn.textContent = 'Install app';
   installBtn.className = 'btn btn-primary';
   installBtn.style.position = 'fixed';
   installBtn.style.bottom = '20px';

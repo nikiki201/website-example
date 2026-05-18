@@ -1,26 +1,30 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bistro du Quai - Restaurant</title>
+  <title>Mee Noodle - Amsterdam</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
       <div class="brand">
-        <span class="logo">Bistro du Quai</span>
-        <p>Saveurs de la mer et ambiance chaleureuse</p>
+        <span class="logo">Mee Noodle</span>
+        <p data-i18n="brandTagline">Fresh noodles, bold Asian flavors in central Amsterdam</p>
       </div>
-      <nav class="site-nav">
-        <a href="#about">A propos</a>
-        <a href="#menu">Menu</a>
-        <a href="#reservation">Reservation</a>
-        <a href="mes-reservations.html">Mes réservations</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="#about" data-i18n="navAbout">About</a>
+        <a href="#menu" data-i18n="navMenu">Menu</a>
+        <a href="#reservation" data-i18n="navReservation">Reservation</a>
+        <a href="mes-reservations.html" data-i18n="navMyReservations">My reservations</a>
+        <a href="#faq" data-i18n="navFaq">FAQ</a>
+        <a href="#contact" data-i18n="navContact">Contact</a>
       </nav>
+      <div class="language-switcher" aria-label="Language selector">
+        <button class="language-button active" type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button class="language-button" type="button" data-lang="nl" aria-pressed="false">NL</button>
+      </div>
     </div>
   </header>
 
@@ -28,18 +32,18 @@
     <section class="hero">
       <div class="container hero-content">
         <div>
-          <span class="eyebrow">Restaurant imaginaire</span>
-          <h1>Bienvenue au <span>Bistro du Quai</span></h1>
-          <p>Une experience culinaire raffinee entre terre et mer, dans un cadre cosy et accueillant.</p>
-          <a class="button" href="#reservation">Reservez votre table</a>
+          <span class="eyebrow" data-i18n="heroEyebrow">Noodle restaurant in Amsterdam</span>
+          <h1 data-i18n-html="heroTitle">Welcome to <span>Mee Noodle</span></h1>
+          <p data-i18n="heroText">A warm spot on Damstraat for steaming noodle soups, stir-fried favorites and quick Asian comfort food.</p>
+          <a class="button" href="#reservation" data-i18n="heroButton">Book a table</a>
         </div>
         <div class="hero-card">
-          <h2>Notre espace</h2>
-          <p>Terrasse ensoleillee, salle chaleureuse et cuisine ouverte pour une ambiance conviviale.</p>
+          <h2 data-i18n="heroCardTitle">Our kitchen</h2>
+          <p data-i18n="heroCardText">Freshly prepared bowls, generous portions and a relaxed setting just steps from Dam Square.</p>
           <ul>
-            <li>Produits frais du marche</li>
-            <li>Menu du jour elabore chaque matin</li>
-            <li>Accords mets et vins recommandes</li>
+            <li data-i18n="heroCardItem1">Spicy beef noodle soup</li>
+            <li data-i18n="heroCardItem2">Crispy sides and dumpling-style bites</li>
+            <li data-i18n="heroCardItem3">Fast service for lunch, dinner and late cravings</li>
           </ul>
         </div>
       </div>
@@ -47,133 +51,133 @@
 
     <section id="about" class="section container">
       <div class="section-header">
-        <h2>A propos de nous</h2>
-        <p>Le Bistro du Quai propose une cuisine inventive inspiree de la mer et des produits locaux. Notre equipe vous accueille du mardi au dimanche pour un moment convivial et gourmand.</p>
+        <h2 data-i18n="aboutTitle">About Mee Noodle</h2>
+        <p data-i18n="aboutText">Mee Noodle brings fragrant broths, wok dishes and Asian street-food energy to the heart of Amsterdam. Drop in for a quick bowl or reserve a table for a casual meal with friends.</p>
       </div>
       <div class="grid-3">
         <article class="feature-card">
-          <h3>Qualite</h3>
-          <p>Ingredients selectionnes avec soin, peche locale et legumes de saison.</p>
+          <h3 data-i18n="feature1Title">Fresh</h3>
+          <p data-i18n="feature1Text">Noodles, vegetables and toppings prepared for bright flavors and satisfying bowls.</p>
         </article>
         <article class="feature-card">
-          <h3>Ambiance</h3>
-          <p>Decor raffine, lumiere tamisee et service attentionne pour vos soirees.</p>
+          <h3 data-i18n="feature2Title">Central</h3>
+          <p data-i18n="feature2Text">Located at Damstraat 1, close to Dam Square and Amsterdam's historic center.</p>
         </article>
         <article class="feature-card">
-          <h3>Savoir-faire</h3>
-          <p>Une equipe passionnee et creative, prete a vous faire decouvrir nos specialites.</p>
+          <h3 data-i18n="feature3Title">Comforting</h3>
+          <p data-i18n="feature3Text">Spicy soups, wok classics and sweet finishes for a simple, generous meal.</p>
         </article>
       </div>
     </section>
 
     <section id="menu" class="section container menu-section">
       <div class="section-header">
-        <h2>Menu du Bistro</h2>
-        <p>Des plats savoureux penses pour eveiller vos papilles du debut a la fin.</p>
+        <h2 data-i18n="menuTitle">Mee Noodle menu</h2>
+        <p data-i18n="menuText">A compact selection inspired by the restaurant's noodle soups, wok dishes and popular sides.</p>
       </div>
       <div class="grid-3">
         <article class="menu-card">
-          <h3>Entrees</h3>
-          <p>Veloute de courge au gingembre</p>
-          <p>Tartare de saumon aux herbes</p>
-          <p>Salade quinoa, avocat et crevettes</p>
+          <h3 data-i18n="menuCol1Title">Noodle soups</h3>
+          <p data-i18n="menuItem1">Spicy beef noodle soup</p>
+          <p data-i18n="menuItem2">Chicken noodle soup</p>
+          <p data-i18n="menuItem3">Vegetable noodle soup</p>
         </article>
         <article class="menu-card">
-          <h3>Plats</h3>
-          <p>Filet de bar roti au beurre citronne</p>
-          <p>Risotto cremeux aux coquillages</p>
-          <p>Supreme de volaille, legumes de saison</p>
+          <h3 data-i18n="menuCol2Title">Wok favorites</h3>
+          <p data-i18n="menuItem4">Pad Thai</p>
+          <p data-i18n="menuItem5">Stir-fried spicy beef</p>
+          <p data-i18n="menuItem6">Sweet and sour chicken</p>
         </article>
         <article class="menu-card">
-          <h3>Desserts</h3>
-          <p>Tartelette citron meringuee</p>
-          <p>Mousse au chocolat intense</p>
-          <p>Panna cotta aux fruits rouges</p>
+          <h3 data-i18n="menuCol3Title">Sides and sweets</h3>
+          <p data-i18n="menuItem7">Crispy fried chicken wings</p>
+          <p data-i18n="menuItem8">Dumplings and small bites</p>
+          <p data-i18n="menuItem9">Taiyaki</p>
         </article>
       </div>
     </section>
 
     <section id="reservation" class="section container reservation-section">
       <div class="section-header">
-        <h2>Reservez une table</h2>
-        <p>Choisissez la date et l'heure, nous prendrons soin de votre arrivee.</p>
+        <h2 data-i18n="reservationTitle">Book a table</h2>
+        <p data-i18n="reservationText">Choose your date and time, and the team will prepare your visit.</p>
       </div>
       <form id="reservation-form" class="reservation-form">
         <div class="form-grid">
           <label>
-            Nom complet
-            <input type="text" name="name" required placeholder="Jean Dupont" />
+            <span data-i18n="labelName">Full name</span>
+            <input type="text" name="name" required placeholder="Alex Chen" data-placeholder-key="placeholderName" />
           </label>
           <label>
-            Email
-            <input type="email" name="email" required placeholder="jean@example.com" />
+            <span data-i18n="labelEmail">Email</span>
+            <input type="email" name="email" required placeholder="alex@example.com" />
           </label>
           <label>
-            Telephone
-            <input type="tel" name="phone" placeholder="0612345678" />
+            <span data-i18n="labelPhone">Phone</span>
+            <input type="tel" name="phone" placeholder="+31 6 1234 5678" />
           </label>
           <label>
-            Date
+            <span data-i18n="labelDate">Date</span>
             <input type="date" name="date" required />
           </label>
           <label>
-            Heure
+            <span data-i18n="labelTime">Time</span>
             <input type="time" name="time" required />
           </label>
           <label>
-            Nombre de personnes
+            <span data-i18n="labelGuests">Number of guests</span>
             <input type="number" name="guests" min="1" max="20" required value="2" />
           </label>
           <label class="full-width">
-            Message
-            <textarea name="message" placeholder="Allergies, occasion speciale..." rows="4"></textarea>
+            <span data-i18n="labelMessage">Message</span>
+            <textarea name="message" placeholder="Allergies, occasion, preferred dishes..." data-placeholder-key="placeholderMessage" rows="4"></textarea>
           </label>
         </div>
-        <button class="button" type="submit">Envoyer la reservation</button>
+        <button class="button" type="submit" data-i18n="reservationButton">Send reservation</button>
         <p class="form-status" id="form-status" aria-live="polite"></p>
       </form>
       <div class="reservation-link">
-        <a class="button" href="mes-reservations.html">Consulter mes réservations</a>
+        <a class="button" href="mes-reservations.html" data-i18n="reservationLink">View my reservations</a>
       </div>
     </section>
 
     <section id="faq" class="section container faq-section">
       <div class="section-header">
-        <h2>FAQ</h2>
-        <p>Reponses aux questions les plus frequentes pour faciliter votre visite.</p>
+        <h2 data-i18n="faqTitle">FAQ</h2>
+        <p data-i18n="faqText">Useful answers before your visit to Mee Noodle.</p>
       </div>
       <div class="faq-grid">
         <div class="faq-card">
-          <h3>Puis-je reserver pour un groupe ?</h3>
-          <p>Oui, vous pouvez reserver jusqu'a 20 personnes directement depuis le formulaire.</p>
+          <h3 data-i18n="faq1Title">Can I book for a group?</h3>
+          <p data-i18n="faq1Text">Yes, you can reserve for up to 20 people directly from the form.</p>
         </div>
         <div class="faq-card">
-          <h3>Proposez-vous des options vegetariennes ?</h3>
-          <p>Nous proposons plusieurs plats vegetariens et alternatives sur demande.</p>
+          <h3 data-i18n="faq2Title">Are there vegetarian options?</h3>
+          <p data-i18n="faq2Text">Yes, vegetable noodle dishes and lighter sides can be requested.</p>
         </div>
         <div class="faq-card">
-          <h3>Y a-t-il un parking a proximite ?</h3>
-          <p>Oui, un parking public se trouve a seulement 3 minutes a pied du restaurant.</p>
+          <h3 data-i18n="faq3Title">Where is the restaurant?</h3>
+          <p data-i18n="faq3Text">Mee Noodle is at Damstraat 1, 1012 JL Amsterdam, Netherlands.</p>
         </div>
       </div>
     </section>
 
     <section id="contact" class="section container contact-section">
       <div class="section-header">
-        <h2>Contactez-nous</h2>
-        <p>Nous sommes ouverts du mardi au dimanche de 12h a 22h.</p>
+        <h2 data-i18n="contactTitle">Contact</h2>
+        <p data-i18n="contactText">Find us on Damstraat, right in the center of Amsterdam.</p>
       </div>
       <div class="contact-grid">
         <div>
-          <h3>Adresse</h3>
-          <p>12 Quai des Saveurs, 75000 Paris</p>
-          <h3>Telephone</h3>
-          <p>+33 1 23 45 67 89</p>
-          <h3>Email</h3>
-          <p>contact@bistroduquai.fr</p>
+          <h3 data-i18n="addressTitle">Address</h3>
+          <p>Damstraat 1, 1012 JL Amsterdam, Netherlands</p>
+          <h3 data-i18n="hoursTitle">Opening hours</h3>
+          <p data-i18n="hoursText">Open daily. Please confirm current hours before visiting.</p>
+          <h3 data-i18n="emailTitle">Email</h3>
+          <p>hello@meenoodle-amsterdam.nl</p>
         </div>
         <div>
-          <iframe title="Plan du restaurant" src="https://maps.google.com/maps?q=Paris&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+          <iframe title="Mee Noodle map" src="https://maps.google.com/maps?q=Damstraat%201%2C%201012%20JL%20Amsterdam%2C%20Netherlands&t=&z=15&ie=UTF8&iwloc=&output=embed"></iframe>
         </div>
       </div>
     </section>
@@ -181,8 +185,8 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>&copy; 2026 Bistro du Quai. Tous droits reserves.</p>
-      <p>Reservez en ligne et profitez d'un moment unique.</p>
+      <p data-i18n="footerCopyright">&copy; 2026 Mee Noodle. All rights reserved.</p>
+      <p data-i18n="footerText">Reserve online and enjoy a fresh noodle bowl in Amsterdam.</p>
     </div>
   </footer>
 

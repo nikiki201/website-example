@@ -1,46 +1,43 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2c5530" />
-  <meta name="description" content="Application mobile de gestion des réservations - Bistro du Quai" />
+  <meta name="description" content="Mobile reservation management app - Mee Noodle" />
 
-  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Bistro Admin" />
+  <meta name="apple-mobile-web-app-title" content="Mee Noodle Admin" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
 
-  <title>Bistro Admin</title>
+  <title>Mee Noodle Admin</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="mobile-admin.css" />
 </head>
 <body>
-  <!-- Écran de connexion -->
   <div id="login-screen" class="login-screen">
     <div class="login-container">
       <div class="login-header">
-        <h1>🍽️ Bistro Admin</h1>
-        <p>Gestion des réservations</p>
+        <h1>Mee Noodle Admin</h1>
+        <p>Reservation management</p>
       </div>
 
       <form id="login-form" class="login-form">
         <div class="form-group">
-          <label for="username">Utilisateur</label>
+          <label for="username">Username</label>
           <input type="text" id="username" required autocomplete="username" />
         </div>
 
         <div class="form-group">
-          <label for="password">Mot de passe</label>
+          <label for="password">Password</label>
           <input type="password" id="password" required autocomplete="current-password" />
         </div>
 
         <button type="submit" class="btn btn-primary btn-full">
-          Se connecter
+          Sign in
         </button>
       </form>
 
@@ -48,120 +45,108 @@
     </div>
   </div>
 
-  <!-- Application principale -->
   <div id="app-screen" class="app-screen" style="display: none;">
-    <!-- Header mobile -->
     <header class="mobile-header">
       <div class="header-content">
-        <h1>🍽️ Bistro Admin</h1>
-        <button id="logout-btn" class="btn-icon" title="Déconnexion">
-          <span>🚪</span>
+        <h1>Mee Noodle Admin</h1>
+        <button id="logout-btn" class="btn-icon" title="Log out">
+          <span>Exit</span>
         </button>
       </div>
     </header>
 
-    <!-- Navigation -->
     <nav class="mobile-nav">
       <button class="nav-btn active" data-tab="reservations">
-        📅 Réservations
+        Reservations
       </button>
       <button class="nav-btn" data-tab="stats">
-        📊 Stats
+        Stats
       </button>
     </nav>
 
-    <!-- Contenu principal -->
     <main class="mobile-main">
-      <!-- Onglet Réservations -->
       <div id="reservations-tab" class="tab-content active">
         <div class="tab-header">
           <div class="search-bar">
-            <input type="search" id="mobile-search" placeholder="Rechercher..." />
+            <input type="search" id="mobile-search" placeholder="Search..." />
           </div>
           <div class="filter-buttons">
-            <button class="filter-btn active" data-filter="all">Toutes</button>
-            <button class="filter-btn" data-filter="today">Aujourd'hui</button>
-            <button class="filter-btn" data-filter="upcoming">À venir</button>
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="today">Today</button>
+            <button class="filter-btn" data-filter="upcoming">Upcoming</button>
           </div>
         </div>
 
         <div class="reservations-count">
-          <span id="reservations-count-text">Chargement...</span>
+          <span id="reservations-count-text">Loading...</span>
         </div>
 
-        <div id="reservations-list" class="reservations-list">
-          <!-- Les réservations seront chargées ici -->
-        </div>
+        <div id="reservations-list" class="reservations-list"></div>
 
         <div id="empty-state" class="empty-state" style="display: none;">
-          <div class="empty-icon">📅</div>
-          <h3>Aucune réservation</h3>
-          <p>Les nouvelles réservations apparaîtront ici</p>
+          <div class="empty-icon">-</div>
+          <h3>No reservations</h3>
+          <p>New reservations will appear here.</p>
         </div>
       </div>
 
-      <!-- Onglet Statistiques -->
       <div id="stats-tab" class="tab-content">
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon">📊</div>
+            <div class="stat-icon">#</div>
             <div class="stat-content">
               <div class="stat-number" id="total-reservations">-</div>
-              <div class="stat-label">Total réservations</div>
+              <div class="stat-label">Total reservations</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon">📅</div>
+            <div class="stat-icon">D</div>
             <div class="stat-content">
               <div class="stat-number" id="today-reservations">-</div>
-              <div class="stat-label">Aujourd'hui</div>
+              <div class="stat-label">Today</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">G</div>
             <div class="stat-content">
               <div class="stat-number" id="total-guests">-</div>
-              <div class="stat-label">Couverts total</div>
+              <div class="stat-label">Total guests</div>
             </div>
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon">📈</div>
+            <div class="stat-icon">A</div>
             <div class="stat-content">
               <div class="stat-number" id="avg-guests">-</div>
-              <div class="stat-label">Moyenne/couvert</div>
+              <div class="stat-label">Average guests</div>
             </div>
           </div>
         </div>
 
         <div class="chart-placeholder">
-          <div class="chart-icon">📈</div>
-          <p>Graphiques détaillés disponibles dans la version complète</p>
+          <div class="chart-icon">-</div>
+          <p>Detailed charts are available in the full version.</p>
         </div>
       </div>
     </main>
 
-    <!-- Modal de détails de réservation -->
     <div id="reservation-modal" class="modal" style="display: none;">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Détails de la réservation</h3>
+          <h3>Reservation details</h3>
           <button class="modal-close">&times;</button>
         </div>
-        <div id="reservation-details" class="modal-body">
-          <!-- Détails chargés dynamiquement -->
-        </div>
+        <div id="reservation-details" class="modal-body"></div>
         <div class="modal-footer">
-          <button id="edit-reservation-btn" class="btn btn-primary">Modifier</button>
-          <button id="delete-reservation-btn" class="btn btn-danger">Supprimer</button>
-          <button class="btn btn-secondary modal-close">Fermer</button>
+          <button id="edit-reservation-btn" class="btn btn-primary">Edit</button>
+          <button id="delete-reservation-btn" class="btn btn-danger">Delete</button>
+          <button class="btn btn-secondary modal-close">Close</button>
         </div>
       </div>
     </div>
 
-    <!-- Toast notifications -->
     <div id="toast" class="toast" style="display: none;">
       <span id="toast-message"></span>
     </div>

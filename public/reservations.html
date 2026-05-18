@@ -1,20 +1,20 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reservations - Bistro du Quai</title>
+  <title>Reservations - Mee Noodle</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
       <div class="brand">
-        <span class="logo">Bistro du Quai</span>
-        <p>Espace de gestion des reservations</p>
+        <span class="logo">Mee Noodle</span>
+        <p>Reservation management area</p>
       </div>
       <nav class="site-nav">
-        <a href="/">Retour a l'accueil</a>
+        <a href="/">Back to home</a>
       </nav>
     </div>
   </header>
@@ -22,17 +22,17 @@
   <main>
     <section class="section container reservations-section">
       <div class="section-header">
-        <h2>Reservations enregistrees</h2>
-        <p>Cette page est reservee aux gerants du restaurant. Vous pouvez rechercher et supprimer une reservation.</p>
+        <h2>Saved reservations</h2>
+        <p>This page is reserved for restaurant managers. You can search and delete a reservation.</p>
       </div>
 
       <div class="reservations-topbar">
-        <input id="reservation-search" type="search" placeholder="Rechercher par nom, email, date ou heure" aria-label="Recherche de reservation" />
-        <p id="reservation-count" class="reservation-count">Chargement...</p>
+        <input id="reservation-search" type="search" placeholder="Search by name, email, date or time" aria-label="Reservation search" />
+        <p id="reservation-count" class="reservation-count">Loading...</p>
       </div>
 
       <div id="reservation-empty" class="info-card" hidden>
-        Aucune reservation trouvee pour le moment.
+        No reservations found yet.
       </div>
 
       <div class="reservations-grid" id="reservation-list"></div>
@@ -41,8 +41,8 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>&copy; 2026 Bistro du Quai. Tous droits reserves.</p>
-      <p>Acces reserve a la gestion interne du restaurant.</p>
+      <p>&copy; 2026 Mee Noodle. All rights reserved.</p>
+      <p>Internal access for restaurant reservation management.</p>
     </div>
   </footer>
 

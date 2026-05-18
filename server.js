@@ -45,8 +45,8 @@ function requireManagerAuth(req, res, next) {
   const authorization = req.headers.authorization;
 
   if (!authorization || !authorization.startsWith('Basic ')) {
-    res.set('WWW-Authenticate', 'Basic realm="Gestion reservations"');
-    return res.status(401).json({ error: 'Authentification requise.' });
+    res.set('WWW-Authenticate', 'Basic realm="Reservation management"');
+    return res.status(401).json({ error: 'Authentication required.' });
   }
 
   const encodedCredentials = authorization.split(' ')[1];
@@ -54,16 +54,16 @@ function requireManagerAuth(req, res, next) {
   const separatorIndex = decodedCredentials.indexOf(':');
 
   if (separatorIndex === -1) {
-    res.set('WWW-Authenticate', 'Basic realm="Gestion reservations"');
-    return res.status(401).json({ error: 'Identifiants invalides.' });
+    res.set('WWW-Authenticate', 'Basic realm="Reservation management"');
+    return res.status(401).json({ error: 'Invalid credentials.' });
   }
 
   const username = decodedCredentials.slice(0, separatorIndex);
   const password = decodedCredentials.slice(separatorIndex + 1);
 
   if (username !== managerUsername || password !== managerPassword) {
-    res.set('WWW-Authenticate', 'Basic realm="Gestion reservations"');
-    return res.status(401).json({ error: 'Accès refusé.' });
+    res.set('WWW-Authenticate', 'Basic realm="Reservation management"');
+    return res.status(401).json({ error: 'Access denied.' });
   }
 
   return next();
@@ -82,7 +82,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error('Echec de la connexion a la base de donnees', err.message);
+    console.error('Database connection failed', err.message);
     process.exit(1);
   }
 });
@@ -107,15 +107,15 @@ app.post('/api/reservations', (req, res) => {
   const { name, email, phone, date, time, guests, message } = req.body;
 
   if (!name || !email || !date || !time || !guests) {
-    return res.status(400).json({ error: 'Veuillez renseigner tous les champs requis.' });
+    return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
   if (!parseReservationDate(date)) {
-    return res.status(400).json({ error: 'La date de reservation est invalide.' });
+    return res.status(400).json({ error: 'The reservation date is invalid.' });
   }
 
   if (isPastReservationDate(date)) {
-    return res.status(400).json({ error: "La date de reservation ne peut pas etre anterieure a aujourd'hui." });
+    return res.status(400).json({ error: 'The reservation date cannot be earlier than today.' });
   }
 
   const createdAt = new Date().toISOString();
@@ -123,11 +123,11 @@ app.post('/api/reservations', (req, res) => {
 
   db.run(query, [name, email, phone || '', date, time, guests, message || '', createdAt], function onInsert(err) {
     if (err) {
-      console.error("Erreur lors de l'insertion de la reservation", err.message);
-      return res.status(500).json({ error: "Impossible d'enregistrer la reservation." });
+      console.error('Reservation insert failed', err.message);
+      return res.status(500).json({ error: 'Unable to save the reservation.' });
     }
 
-    return res.status(201).json({ id: this.lastID, message: 'Reservation enregistree avec succes.' });
+    return res.status(201).json({ id: this.lastID, message: 'Reservation saved successfully.' });
   });
 });
 
@@ -162,7 +162,7 @@ function canModifyReservation(dateValue, timeValue) {
 app.get('/api/user-reservations', (req, res) => {
   const email = String(req.query.email || '').trim();
   if (!email) {
-    return res.status(400).json({ error: 'Email requis.' });
+    return res.status(400).json({ error: 'Email is required.' });
   }
 
   db.all(
@@ -170,7 +170,7 @@ app.get('/api/user-reservations', (req, res) => {
     [email.toLowerCase()],
     (err, rows) => {
       if (err) {
-        return res.status(500).json({ error: 'Impossible de recuperer les reservations.' });
+        return res.status(500).json({ error: 'Unable to retrieve reservations.' });
       }
 
       return res.json(rows);
@@ -183,33 +183,33 @@ app.put('/api/user-reservations/:id', (req, res) => {
   const { email, date, time, guests, message } = req.body;
 
   if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+    return res.status(400).json({ error: 'Invalid reservation ID.' });
   }
 
   if (!email || !date || !time || !guests) {
-    return res.status(400).json({ error: 'Veuillez renseigner tous les champs requis.' });
+    return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
   const newDateTime = parseReservationDateTime(date, time);
   if (!newDateTime || newDateTime.getTime() <= Date.now()) {
-    return res.status(400).json({ error: 'Date et heure de reservation invalides ou passees.' });
+    return res.status(400).json({ error: 'Reservation date and time are invalid or in the past.' });
   }
 
   db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
     if (err) {
-      return res.status(500).json({ error: 'Impossible de recuperer la reservation.' });
+      return res.status(500).json({ error: 'Unable to retrieve the reservation.' });
     }
 
     if (!row) {
-      return res.status(404).json({ error: 'Reservation introuvable.' });
+      return res.status(404).json({ error: 'Reservation not found.' });
     }
 
     if (row.email.toLowerCase() !== String(email).trim().toLowerCase()) {
-      return res.status(403).json({ error: 'Email non conforme a la reservation.' });
+      return res.status(403).json({ error: 'Email does not match the reservation.' });
     }
 
     if (!canModifyReservation(row.date, row.time)) {
-      return res.status(403).json({ error: 'Cette reservation ne peut plus etre modifiee : moins de 48 heures restantes.' });
+      return res.status(403).json({ error: 'This reservation can no longer be edited because less than 48 hours remain.' });
     }
 
     db.run(
@@ -217,10 +217,10 @@ app.put('/api/user-reservations/:id', (req, res) => {
       [date, time, guests, message || '', reservationId],
       function onUpdate(updateErr) {
         if (updateErr) {
-          return res.status(500).json({ error: 'Impossible de mettre a jour la reservation.' });
+          return res.status(500).json({ error: 'Unable to update the reservation.' });
         }
 
-        return res.json({ message: 'Reservation modifiee avec succes.' });
+        return res.json({ message: 'Reservation updated successfully.' });
       }
     );
   });
@@ -231,41 +231,51 @@ app.delete('/api/user-reservations/:id', (req, res) => {
   const { email } = req.body;
 
   if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+    return res.status(400).json({ error: 'Invalid reservation ID.' });
   }
 
   if (!email) {
-    return res.status(400).json({ error: 'Email requis pour l\'annulation.' });
+    return res.status(400).json({ error: 'Email is required to cancel.' });
   }
 
   db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
     if (err) {
-      return res.status(500).json({ error: 'Impossible de recuperer la reservation.' });
+      return res.status(500).json({ error: 'Unable to retrieve the reservation.' });
     }
 
     if (!row) {
-      return res.status(404).json({ error: 'Reservation introuvable.' });
+      return res.status(404).json({ error: 'Reservation not found.' });
     }
 
     if (row.email.toLowerCase() !== String(email).trim().toLowerCase()) {
-      return res.status(403).json({ error: 'Email non conforme a la reservation.' });
+      return res.status(403).json({ error: 'Email does not match the reservation.' });
     }
 
     if (!canModifyReservation(row.date, row.time)) {
-      return res.status(403).json({ error: 'Cette reservation ne peut plus etre annulee : moins de 48 heures restantes.' });
+      return res.status(403).json({ error: 'This reservation can no longer be cancelled because less than 48 hours remain.' });
     }
 
     db.run('DELETE FROM reservations WHERE id = ?', [reservationId], function onDelete(deleteErr) {
       if (deleteErr) {
-        return res.status(500).json({ error: 'Impossible d\'annuler la reservation.' });
+        return res.status(500).json({ error: 'Unable to cancel the reservation.' });
       }
 
       if (this.changes === 0) {
-        return res.status(404).json({ error: 'Reservation introuvable.' });
+        return res.status(404).json({ error: 'Reservation not found.' });
       }
 
-      return res.json({ message: 'Reservation annulee avec succes.' });
+      return res.json({ message: 'Reservation cancelled successfully.' });
     });
+  });
+});
+
+app.get('/api/reservations', (req, res) => {
+  db.all('SELECT * FROM reservations ORDER BY created_at DESC', (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to retrieve reservations.' });
+    }
+
+    return res.json(rows);
   });
 });
 
@@ -274,25 +284,25 @@ app.put('/api/reservations/:id', (req, res) => {
   const { name, email, phone, date, time, guests, message } = req.body;
 
   if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+    return res.status(400).json({ error: 'Invalid reservation ID.' });
   }
 
   if (!name || !email || !date || !time || !guests) {
-    return res.status(400).json({ error: 'Veuillez renseigner tous les champs requis.' });
+    return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
   const newDateTime = parseReservationDateTime(date, time);
   if (!newDateTime) {
-    return res.status(400).json({ error: 'Date et heure de reservation invalides.' });
+    return res.status(400).json({ error: 'Reservation date and time are invalid.' });
   }
 
   db.get('SELECT * FROM reservations WHERE id = ?', [reservationId], (err, row) => {
     if (err) {
-      return res.status(500).json({ error: 'Impossible de recuperer la reservation.' });
+      return res.status(500).json({ error: 'Unable to retrieve the reservation.' });
     }
 
     if (!row) {
-      return res.status(404).json({ error: 'Reservation introuvable.' });
+      return res.status(404).json({ error: 'Reservation not found.' });
     }
 
     db.run(
@@ -300,10 +310,10 @@ app.put('/api/reservations/:id', (req, res) => {
       [name, email, phone || '', date, time, guests, message || '', reservationId],
       function onUpdate(updateErr) {
         if (updateErr) {
-          return res.status(500).json({ error: 'Impossible de mettre a jour la reservation.' });
+          return res.status(500).json({ error: 'Unable to update the reservation.' });
         }
 
-        return res.json({ message: 'Reservation modifiee avec succes.' });
+        return res.json({ message: 'Reservation updated successfully.' });
       }
     );
   });
@@ -313,19 +323,19 @@ app.delete('/api/reservations/:id', (req, res) => {
   const reservationId = Number.parseInt(req.params.id, 10);
 
   if (!Number.isInteger(reservationId) || reservationId <= 0) {
-    return res.status(400).json({ error: 'Identifiant de reservation invalide.' });
+    return res.status(400).json({ error: 'Invalid reservation ID.' });
   }
 
   db.run('DELETE FROM reservations WHERE id = ?', [reservationId], function onDelete(err) {
     if (err) {
-      return res.status(500).json({ error: 'Impossible de supprimer la reservation.' });
+      return res.status(500).json({ error: 'Unable to delete the reservation.' });
     }
 
     if (this.changes === 0) {
-      return res.status(404).json({ error: 'Reservation introuvable.' });
+      return res.status(404).json({ error: 'Reservation not found.' });
     }
 
-    return res.json({ message: 'Reservation supprimee avec succes.' });
+    return res.json({ message: 'Reservation deleted successfully.' });
   });
 });
 
@@ -338,5 +348,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Serveur demarre sur http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
